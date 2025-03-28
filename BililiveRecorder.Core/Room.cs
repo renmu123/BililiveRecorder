@@ -399,7 +399,7 @@ namespace BililiveRecorder.Core
 
         ///
         private void StartDamakuConnection(bool delay = true) =>
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 if (this.disposedValue)
                     return;
