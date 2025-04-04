@@ -309,7 +309,7 @@ namespace BililiveRecorder.WPF
                 .WriteTo.Async(l => l.File(new CompactJsonFormatter(), logFilePath, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true))
                 .WriteTo.Sentry(o =>
                 {
-                    o.Dsn = "https://fed94ca0022e8697c171d0d35f15c257@o210546.ingest.sentry.io/5556540";
+                    o.Dsn = "https://17299be77e1a8d72156e96ca2cb2b058@o210546.ingest.us.sentry.io/5556540";
                     o.SendDefaultPii = true;
                     o.IsGlobalModeEnabled = true;
                     o.DisableAppDomainUnhandledExceptionCapture();
