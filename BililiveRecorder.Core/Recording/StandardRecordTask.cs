@@ -311,7 +311,7 @@ namespace BililiveRecorder.Core.Recording
                 this.last_path = paths.fullPath;
                 var state = this.OnNewFile(paths);
 
-                var stream = new FileStream(paths.fullPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read | FileShare.Delete);
+                var stream = new FileStream(paths.fullPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read);
                 return (stream, state);
             }
 
