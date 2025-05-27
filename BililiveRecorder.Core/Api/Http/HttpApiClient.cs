@@ -237,7 +237,7 @@ BUVID3 (from Cookie): {this.GetBuvid3()}";
             if (this.disposedValue)
                 throw new ObjectDisposedException(nameof(HttpApiClient));
 
-            Url url = $@"{this.config.LiveApiHost}/xlive/web-room/v1/index/getDanmuInfo?id={roomid}&type=0";
+            Url url = $@"{this.config.LiveApiHost}/xlive/web-room/v1/index/getDanmuInfo?id={roomid}&type=0&web_location=444.8";
             var q = url.QueryParams;
 
             var sign = this.wbi.Sign(q.Select(static x => new KeyValuePair<string, string>(x.Name, x.Value?.ToString() ?? string.Empty)));
