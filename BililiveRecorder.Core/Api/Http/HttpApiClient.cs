@@ -31,7 +31,7 @@ namespace BililiveRecorder.Core.Api.Http
 
         private readonly Wbi wbi = new Wbi();
         private DateTimeOffset wbiLastUpdate = DateTimeOffset.MinValue;
-        private static readonly TimeSpan wbiUpdateInterval = TimeSpan.FromHours(2);
+        private static readonly TimeSpan wbiUpdateInterval = TimeSpan.FromHours(4);
 
         private HttpClient client;
         private bool disposedValue;
@@ -78,7 +78,8 @@ namespace BililiveRecorder.Core.Api.Http
             else
             {
                 this.uid = 0;
-                this.buvid3 = null;
+                this.buvid3 = Buvid.GenerateLocalId();
+                headers.Add("Cookie", $"buvid3={this.buvid3}");
             }
 
             var old = Interlocked.Exchange(ref this.client, client);
@@ -232,10 +233,12 @@ BUVID3 (from Cookie): {this.GetBuvid3()}";
 
         public string? GetBuvid3() => this.buvid3;
 
-        public Task<BilibiliApiResponse<DanmuInfo>> GetDanmakuServerAsync(int roomid)
+        public async Task<BilibiliApiResponse<DanmuInfo>> GetDanmakuServerAsync(int roomid)
         {
             if (this.disposedValue)
                 throw new ObjectDisposedException(nameof(HttpApiClient));
+
+            await this.UpdateWbiKeyAsync().ConfigureAwait(false);
 
             Url url = $@"{this.config.LiveApiHost}/xlive/web-room/v1/index/getDanmuInfo?id={roomid}&type=0&web_location=444.8";
             var q = url.QueryParams;
@@ -244,7 +247,7 @@ BUVID3 (from Cookie): {this.GetBuvid3()}";
             q.AddOrReplace(Wbi.W_RID, sign.sign);
             q.AddOrReplace(Wbi.WTS, sign.ts);
 
-            return this.FetchAsync<DanmuInfo>(url);
+            return await this.FetchAsync<DanmuInfo>(url);
         }
 
         protected virtual void Dispose(bool disposing)
