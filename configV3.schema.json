@@ -136,8 +136,8 @@
           }
         },
         "TimingCheckInterval": {
-          "description": "主动检查时间间隔 秒\n默认: 600",
-          "markdownDescription": "主动检查时间间隔 秒  \n默认: `600 `\n\n",
+          "description": "主动检查时间间隔 秒\n默认: 180",
+          "markdownDescription": "主动检查时间间隔 秒  \n默认: `180 `\n\n",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -149,7 +149,7 @@
               "type": "integer",
               "minimum": 0,
               "maximum": 4294967295,
-              "default": 600
+              "default": 180
             }
           }
         },
@@ -547,8 +547,8 @@
           }
         },
         "RecordingQuality": {
-          "description": "直播画质\n默认: 10000",
-          "markdownDescription": "直播画质  \n默认: `10000 `\n\n",
+          "description": "直播画质\n默认: avc10000,hevc10000",
+          "markdownDescription": "直播画质  \n默认: `avc10000,hevc10000 `\n\n",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -558,7 +558,7 @@
             },
             "Value": {
               "type": "string",
-              "default": "10000"
+              "default": "avc10000,hevc10000"
             }
           }
         },
@@ -575,6 +575,38 @@
             "Value": {
               "type": "boolean",
               "default": false
+            }
+          }
+        },
+        "FlvProcessorDisableSplitOnH264AnnexB": {
+          "description": "FLV修复-检测到 H264 Annex-B 时禁用修复分段\n默认: false",
+          "markdownDescription": "FLV修复-检测到 H264 Annex-B 时禁用修复分段  \n默认: `false `\n\n",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "HasValue": {
+              "type": "boolean",
+              "default": true
+            },
+            "Value": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "TitleFilterPatterns": {
+          "description": "不录制的标题匹配正则\n默认: ",
+          "markdownDescription": "不录制的标题匹配正则  \n默认: ` `\n\n",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "HasValue": {
+              "type": "boolean",
+              "default": true
+            },
+            "Value": {
+              "type": "string",
+              "default": ""
             }
           }
         }
@@ -792,8 +824,8 @@
           }
         },
         "RecordingQuality": {
-          "description": "直播画质\n默认: 10000",
-          "markdownDescription": "直播画质  \n默认: `10000 `\n\n",
+          "description": "直播画质\n默认: avc10000,hevc10000",
+          "markdownDescription": "直播画质  \n默认: `avc10000,hevc10000 `\n\n",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -803,7 +835,7 @@
             },
             "Value": {
               "type": "string",
-              "default": "10000"
+              "default": "avc10000,hevc10000"
             }
           }
         },
@@ -820,6 +852,38 @@
             "Value": {
               "type": "boolean",
               "default": false
+            }
+          }
+        },
+        "FlvProcessorDisableSplitOnH264AnnexB": {
+          "description": "FLV修复-检测到 H264 Annex-B 时禁用修复分段\n默认: false",
+          "markdownDescription": "FLV修复-检测到 H264 Annex-B 时禁用修复分段  \n默认: `false `\n\n",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "HasValue": {
+              "type": "boolean",
+              "default": true
+            },
+            "Value": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "TitleFilterPatterns": {
+          "description": "不录制的标题匹配正则\n默认: ",
+          "markdownDescription": "不录制的标题匹配正则  \n默认: ` `\n\n",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "HasValue": {
+              "type": "boolean",
+              "default": true
+            },
+            "Value": {
+              "type": "string",
+              "default": ""
             }
           }
         }

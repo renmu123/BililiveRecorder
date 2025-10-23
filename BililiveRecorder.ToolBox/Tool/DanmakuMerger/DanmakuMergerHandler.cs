@@ -174,7 +174,22 @@ namespace BililiveRecorder.ToolBox.Tool.DanmakuMerger
                     for (var i = 0; i < inputLength; i++)
                     {
                         var r = readers[i]!;
-                        var el = ReadDanmakuElement(r);
+                        XElement? el = null;
+                        
+                        try
+                        {
+                            el = ReadDanmakuElement(r);
+                        }
+                        catch (Exception readEx)
+                        {
+                            return new CommandResponse<DanmakuMergerResponse>
+                            {
+                                Status = ResponseStatus.InputIOError,
+                                Exception = readEx,
+                                ErrorMessage = request.Inputs[i] + ": " + readEx.Message
+                            };
+                        }
+
                         if (el is null)
                         {
                             readers[i] = null;
@@ -206,7 +221,23 @@ namespace BililiveRecorder.ToolBox.Tool.DanmakuMerger
                         if (reader is not null)
                         {
                         readNextElementFromSameReader:
-                            var newEl = ReadDanmakuElement(reader);
+                        
+                            XElement? newEl = null;
+
+                            try
+                            {
+                                newEl = ReadDanmakuElement(reader);
+                            }
+                            catch (Exception readEx)
+                            {
+                                return new CommandResponse<DanmakuMergerResponse>
+                                {
+                                    Status = ResponseStatus.InputIOError,
+                                    Exception = readEx,
+                                    ErrorMessage = request.Inputs[readerIndex] + ": " + readEx.Message
+                                };
+                            }
+
                             if (newEl is null)
                             {
                                 // 文件已结束

@@ -21,10 +21,14 @@ namespace BililiveRecorder.Core.Recording
             this.factoryStandard = ActivatorUtilities.CreateFactory(typeof(StandardRecordTask), new[] { typeof(IRoom) });
         }
 
-        public IRecordTask CreateRecordTask(IRoom room)
+        public IRecordTask CreateRecordTask(IRoom room, RecordMode? recordModeOverride = null)
         {
             var recordMode = room.RoomConfig.RecordMode;
-            this.logger.Debug("Create record task with mode {RecordMode} for room {RoomId}", recordMode, room.RoomConfig.RoomId);
+            if (recordModeOverride.HasValue)
+            {
+                recordMode = recordModeOverride.Value;
+            }
+            this.logger.Debug("Create record task with mode {RecordMode} for room {RoomId}, override: {Override}", recordMode, room.RoomConfig.RoomId, recordModeOverride);
             return recordMode switch
             {
                 RecordMode.RawData => (IRecordTask)this.factoryRawData(this.serviceProvider, new[] { room }),

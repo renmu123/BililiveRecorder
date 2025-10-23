@@ -91,7 +91,7 @@ export const data: Array<ConfigEntry> = [
         name: "直播画质",
         type: "string?",
         configType: "room",
-        default: "10000",
+        default: "avc10000,hevc10000",
     },
     {
         id: "FileNameRecordTemplate",
@@ -108,12 +108,26 @@ export const data: Array<ConfigEntry> = [
         default: false
     },
     {
+        id: "FlvProcessorDisableSplitOnH264AnnexB",
+        name: "FLV修复-检测到 H264 Annex-B 时禁用修复分段",
+        type: "bool",
+        configType: "room",
+        default: false
+    },
+    {
         id: "FlvWriteMetadata",
         name: "是否在视频文件写入直播信息 metadata",
         type: "bool",
         configType: "globalOnly",
         advancedConfig: true,
         default: true
+    },
+    {
+        id: "TitleFilterPatterns",
+        name: "不录制的标题匹配正则",
+        type: "string?",
+        configType: "room",
+        default: ""
     },
     {
         id: "WebHookUrls",
@@ -165,7 +179,7 @@ export const data: Array<ConfigEntry> = [
         type: "uint",
         configType: "globalOnly",
         advancedConfig: true,
-        default: 10 * 60,
+        default: 3 * 60,
     },
     {
         id: "TimingApiTimeout",

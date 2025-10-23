@@ -22,12 +22,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
 
       # - name: Make sure webui can be built
       #   if: "${{ matrix.os == 'windows-latest' }}"
@@ -84,12 +84,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
 
       # - name: Build WebUI
       #   run: ./webui/build.sh

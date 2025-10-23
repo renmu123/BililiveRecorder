@@ -27,7 +27,9 @@ namespace BililiveRecorder.Cli.Configure
         RecordingQuality,
         FileNameRecordTemplate,
         FlvProcessorSplitOnScriptTag,
+        FlvProcessorDisableSplitOnH264AnnexB,
         FlvWriteMetadata,
+        TitleFilterPatterns,
         WebHookUrls,
         WebHookUrlsV2,
         WpfShowTitleAndArea,
@@ -65,7 +67,9 @@ namespace BililiveRecorder.Cli.Configure
         RecordDanmakuGuard,
         SaveStreamCover,
         RecordingQuality,
-        FlvProcessorSplitOnScriptTag
+        FlvProcessorSplitOnScriptTag,
+        FlvProcessorDisableSplitOnH264AnnexB,
+        TitleFilterPatterns
     }
     public static class ConfigInstructions
     {
@@ -87,7 +91,9 @@ namespace BililiveRecorder.Cli.Configure
             GlobalConfig.Add(GlobalConfigProperties.RecordingQuality, new ConfigInstruction<GlobalConfig, string>(config => config.HasRecordingQuality = false, (config, value) => config.RecordingQuality = value) { Name = "RecordingQuality", CanBeOptional = true });
             GlobalConfig.Add(GlobalConfigProperties.FileNameRecordTemplate, new ConfigInstruction<GlobalConfig, string>(config => config.HasFileNameRecordTemplate = false, (config, value) => config.FileNameRecordTemplate = value) { Name = "FileNameRecordTemplate", CanBeOptional = true });
             GlobalConfig.Add(GlobalConfigProperties.FlvProcessorSplitOnScriptTag, new ConfigInstruction<GlobalConfig, bool>(config => config.HasFlvProcessorSplitOnScriptTag = false, (config, value) => config.FlvProcessorSplitOnScriptTag = value) { Name = "FlvProcessorSplitOnScriptTag", CanBeOptional = true });
+            GlobalConfig.Add(GlobalConfigProperties.FlvProcessorDisableSplitOnH264AnnexB, new ConfigInstruction<GlobalConfig, bool>(config => config.HasFlvProcessorDisableSplitOnH264AnnexB = false, (config, value) => config.FlvProcessorDisableSplitOnH264AnnexB = value) { Name = "FlvProcessorDisableSplitOnH264AnnexB", CanBeOptional = true });
             GlobalConfig.Add(GlobalConfigProperties.FlvWriteMetadata, new ConfigInstruction<GlobalConfig, bool>(config => config.HasFlvWriteMetadata = false, (config, value) => config.FlvWriteMetadata = value) { Name = "FlvWriteMetadata", CanBeOptional = true });
+            GlobalConfig.Add(GlobalConfigProperties.TitleFilterPatterns, new ConfigInstruction<GlobalConfig, string>(config => config.HasTitleFilterPatterns = false, (config, value) => config.TitleFilterPatterns = value) { Name = "TitleFilterPatterns", CanBeOptional = true });
             GlobalConfig.Add(GlobalConfigProperties.WebHookUrls, new ConfigInstruction<GlobalConfig, string>(config => config.HasWebHookUrls = false, (config, value) => config.WebHookUrls = value) { Name = "WebHookUrls", CanBeOptional = true });
             GlobalConfig.Add(GlobalConfigProperties.WebHookUrlsV2, new ConfigInstruction<GlobalConfig, string>(config => config.HasWebHookUrlsV2 = false, (config, value) => config.WebHookUrlsV2 = value) { Name = "WebHookUrlsV2", CanBeOptional = true });
             GlobalConfig.Add(GlobalConfigProperties.WpfShowTitleAndArea, new ConfigInstruction<GlobalConfig, bool>(config => config.HasWpfShowTitleAndArea = false, (config, value) => config.WpfShowTitleAndArea = value) { Name = "WpfShowTitleAndArea", CanBeOptional = true });
@@ -122,6 +128,8 @@ namespace BililiveRecorder.Cli.Configure
             RoomConfig.Add(RoomConfigProperties.SaveStreamCover, new ConfigInstruction<RoomConfig, bool>(config => config.HasSaveStreamCover = false, (config, value) => config.SaveStreamCover = value) { Name = "SaveStreamCover", CanBeOptional = true });
             RoomConfig.Add(RoomConfigProperties.RecordingQuality, new ConfigInstruction<RoomConfig, string>(config => config.HasRecordingQuality = false, (config, value) => config.RecordingQuality = value) { Name = "RecordingQuality", CanBeOptional = true });
             RoomConfig.Add(RoomConfigProperties.FlvProcessorSplitOnScriptTag, new ConfigInstruction<RoomConfig, bool>(config => config.HasFlvProcessorSplitOnScriptTag = false, (config, value) => config.FlvProcessorSplitOnScriptTag = value) { Name = "FlvProcessorSplitOnScriptTag", CanBeOptional = true });
+            RoomConfig.Add(RoomConfigProperties.FlvProcessorDisableSplitOnH264AnnexB, new ConfigInstruction<RoomConfig, bool>(config => config.HasFlvProcessorDisableSplitOnH264AnnexB = false, (config, value) => config.FlvProcessorDisableSplitOnH264AnnexB = value) { Name = "FlvProcessorDisableSplitOnH264AnnexB", CanBeOptional = true });
+            RoomConfig.Add(RoomConfigProperties.TitleFilterPatterns, new ConfigInstruction<RoomConfig, string>(config => config.HasTitleFilterPatterns = false, (config, value) => config.TitleFilterPatterns = value) { Name = "TitleFilterPatterns", CanBeOptional = true });
         }
     }
 

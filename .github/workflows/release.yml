@@ -90,12 +90,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
 
       # - name: Build WebUI
       #   run: ./webui/build.sh
@@ -108,7 +108,7 @@ jobs:
       #   run: dotnet publish -c ${{ matrix.build_configuration }} -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CLI-${{ matrix.rid }}-${{ matrix.build_configuration }}
           path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Release

@@ -10,6 +10,7 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using BililiveRecorder.Core.Api;
 using BililiveRecorder.Flv.Pipeline;
 using BililiveRecorder.ToolBox;
 using Esprima;
@@ -286,10 +287,10 @@ namespace BililiveRecorder.WPF
                 .Enrich.WithProcessId()
                 .Enrich.WithThreadId()
                 .Enrich.WithThreadName()
-                .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .Destructure.AsScalar<IPAddress>()
                 .Destructure.AsScalar<ProcessingComment>()
+                .Destructure.AsScalar<StreamCodecQn>()
                 .Destructure.ByTransforming<Flv.Xml.XmlFlvFile.XmlFlvFileMeta>(x => new
                 {
                     x.Version,
@@ -308,7 +309,7 @@ namespace BililiveRecorder.WPF
                 .WriteTo.Async(l => l.File(new CompactJsonFormatter(), logFilePath, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true))
                 .WriteTo.Sentry(o =>
                 {
-                    o.Dsn = "https://fed94ca0022e8697c171d0d35f15c257@o210546.ingest.sentry.io/5556540";
+                    o.Dsn = "https://17299be77e1a8d72156e96ca2cb2b058@o210546.ingest.us.sentry.io/5556540";
                     o.SendDefaultPii = true;
                     o.IsGlobalModeEnabled = true;
                     o.DisableAppDomainUnhandledExceptionCapture();

@@ -4,9 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BililiveRecorder.Core.Api;
+using BililiveRecorder.Core.Config;
 using BililiveRecorder.Core.Config.V3;
 using BililiveRecorder.Core.Danmaku;
 using BililiveRecorder.Core.Event;
@@ -53,6 +55,7 @@ namespace BililiveRecorder.Core
         private bool danmakuConnected;
         private bool streaming;
         private bool autoRecordForThisSession = true;
+        private bool nextRecordShouldUseRawMode = false;
 
         private IRecordTask? recordTask;
         private DateTimeOffset danmakuClientConnectTime;
@@ -228,6 +231,32 @@ namespace BililiveRecorder.Core
             }
         }
 
+        public void MarkNextRecordShouldUseRawMode()
+        {
+            this.nextRecordShouldUseRawMode = true;
+        }
+
+        private static readonly TimeSpan TitleRegexMatchTimeout = TimeSpan.FromSeconds(0.5);
+
+        /// <exception cref="ArgumentException" />
+        /// <exception cref="RegexMatchTimeoutException" />
+        private bool DoesTitleAllowRecord()
+        {
+            // 按新行分割的正则表达式
+            var patterns = this.RoomConfig.TitleFilterPatterns?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (patterns is null || patterns.Length == 0)
+                return true;
+
+            foreach (var pattern in patterns)
+            {
+                if (Regex.IsMatch(input: this.Title, pattern: pattern, options: RegexOptions.None, matchTimeout: TitleRegexMatchTimeout))
+                    return false;
+            }
+
+            return true;
+        }
+
         ///
         private void CreateAndStartNewRecordTask(bool skipFetchRoomInfo = false)
         {
@@ -242,7 +271,22 @@ namespace BililiveRecorder.Core
                 if (this.recordTask != null)
                     return;
 
-                var task = this.recordTaskFactory.CreateRecordTask(this);
+                try
+                {
+                    if (!this.DoesTitleAllowRecord())
+                    {
+                        this.logger.Information("标题匹配到跳过录制设置中的规则，不录制");
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Warning(ex, "检查标题是否匹配跳过录制正则表达式时出错");
+                }
+
+                var task = this.recordTaskFactory.CreateRecordTask(this, this.nextRecordShouldUseRawMode ? RecordMode.RawData : null);
+                this.nextRecordShouldUseRawMode = false;
+
                 task.IOStats += this.RecordTask_IOStats;
                 task.RecordingStats += this.RecordTask_RecordingStats;
                 task.RecordFileOpening += this.RecordTask_RecordFileOpening;
@@ -355,7 +399,7 @@ namespace BililiveRecorder.Core
 
         ///
         private void StartDamakuConnection(bool delay = true) =>
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 if (this.disposedValue)
                     return;
@@ -481,7 +525,7 @@ namespace BililiveRecorder.Core
         {
             const int MAX_ATTEMPT = 3;
             var attempt = 0;
-retry:
+        retry:
             try
             {
                 var coverUrl = this.RawBilibiliApiJsonData?["room_info"]?["cover"]?.ToObject<string>();
@@ -653,6 +697,7 @@ retry:
             }
         }
 
+
         private void Room_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -670,7 +715,8 @@ retry:
                     }
                     break;
                 case nameof(this.Title):
-                    if (this.RoomConfig.CuttingByTitle){
+                    if (this.RoomConfig.CuttingByTitle)
+                    {
                         this.SplitOutput();
                     }
                     break;

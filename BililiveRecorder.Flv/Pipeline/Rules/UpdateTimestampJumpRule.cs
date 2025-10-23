@@ -95,13 +95,17 @@ namespace BililiveRecorder.Flv.Pipeline.Rules
                     s.Tag.Timestamp = ts.NextTimestampTarget;
                     // ts.Reset();
                 }
-                else if (action is PipelineHeaderAction h) // Header Tag 时间戳永远为 0
+                else if (action is PipelineHeaderAction h)
                 {
-                    if (h.VideoHeader != null)
-                        h.VideoHeader.Timestamp = 0;
-                    if (h.AudioHeader != null)
-                        h.AudioHeader.Timestamp = 0;
-                    ts.Reset();
+                    var annexBState = HandleNewHeaderRule.GetAnnexBState(context);
+                    if (annexBState != HandleNewHeaderRule.AnnexBState.IsAnnexB)
+                    {
+                        // Header Tag 时间戳重设到 0
+                        if (h.VideoHeader != null)
+                            h.VideoHeader.Timestamp = 0;
+                        if (h.AudioHeader != null)
+                            h.AudioHeader.Timestamp = 0;
+                    }
                 }
             }
         }

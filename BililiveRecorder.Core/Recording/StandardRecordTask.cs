@@ -64,7 +64,8 @@ namespace BililiveRecorder.Core.Recording
             this.pipeline = builder
                 .ConfigureServices(services => services.AddSingleton(new ProcessingPipelineSettings
                 {
-                    SplitOnScriptTag = room.RoomConfig.FlvProcessorSplitOnScriptTag
+                    SplitOnScriptTag = room.RoomConfig.FlvProcessorSplitOnScriptTag,
+                    DisableSplitOnH264AnnexB = room.RoomConfig.FlvProcessorDisableSplitOnH264AnnexB,
                 }))
                 .AddRule(this.statsRule)
                 .AddRule(this.splitFileRule)
@@ -202,8 +203,8 @@ namespace BililiveRecorder.Core.Recording
             catch (UnsupportedCodecException ex)
             {
                 // 直播流不是 H.264
-                this.logger.Warning(ex, "不支持此直播流的视频编码格式（只支持 H.264），本场直播不再自动启动录制。");
-                this.room.StopRecord(); // 停止自动重试
+                this.logger.Warning(ex, "不支持此直播流的视频编码格式（只支持 H.264），下次录制会尝试使用原始模式录制");
+                this.room.MarkNextRecordShouldUseRawMode();
             }
             catch (OperationCanceledException ex)
             {
@@ -310,7 +311,7 @@ namespace BililiveRecorder.Core.Recording
                 this.last_path = paths.fullPath;
                 var state = this.OnNewFile(paths);
 
-                var stream = new FileStream(paths.fullPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read | FileShare.Delete);
+                var stream = new FileStream(paths.fullPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read);
                 return (stream, state);
             }
 

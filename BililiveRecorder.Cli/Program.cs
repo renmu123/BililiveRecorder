@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Builder;
 using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BililiveRecorder.Cli.Configure;
 using BililiveRecorder.Core;
+using BililiveRecorder.Core.Api;
 using BililiveRecorder.Core.Config;
 using BililiveRecorder.Core.Config.V3;
 using BililiveRecorder.DependencyInjection;
@@ -45,6 +49,10 @@ namespace BililiveRecorder.Cli
             {
                 ConsoleModeHelper.SetQuickEditMode(false);
             }
+
+            DistributedContextPropagator.Current = DistributedContextPropagator.CreateNoOutputPropagator();
+            AppContext.SetSwitch("System.Net.Http.EnableActivityPropagation", false);
+
             RootCommand root;
 
             using (var entrypointLogger = BuildLogger(LogEventLevel.Fatal, LogEventLevel.Verbose))
@@ -127,7 +135,41 @@ namespace BililiveRecorder.Cli
                 }
             }
 
-            return root.Invoke(args);
+            var builder = new CommandLineBuilder(root);
+
+            builder.AddMiddleware(async (context, next) =>
+            {
+                var isToolCommand = false;
+                var tct = typeof(ToolCommand);
+                var cr = context.ParseResult.CommandResult;
+                while (cr is not null)
+                {
+                    if (cr.Command.GetType() == tct)
+                    {
+                        isToolCommand = true;
+                        break;
+                    }
+                    cr = cr.Parent as CommandResult;
+                }
+                cr = null;
+
+                if (isToolCommand)
+                {
+                    // hack to enable logging for tool commands
+                    using var logger = BuildLogger(LogEventLevel.Fatal, LogEventLevel.Verbose);
+                    Log.Logger = logger;
+                    await next(context);
+                    return;
+                }
+                else
+                {
+                    await next(context);
+                }
+            });
+
+            builder.UseDefaults();
+            var parser = builder.Build();
+            return parser.Invoke(args);
         }
 
         private static async Task<int> RunConfigModeAsync(RunModeArguments args)
@@ -143,8 +185,17 @@ namespace BililiveRecorder.Cli
 
             if (args.ConfigOverride is not null)
             {
-                logger.Information("Using config from {ConfigOverride}", args.ConfigOverride);
-                config = ConfigParser.LoadFromFile(args.ConfigOverride);
+                if (Directory.Exists(args.ConfigOverride))
+                {
+                    var overrideFile = Path.Combine(args.ConfigOverride, "config.json");
+                    logger.Information("Using config from {ConfigOverride}", overrideFile);
+                    config = ConfigParser.LoadFromFile(overrideFile);
+                }
+                else
+                {
+                    logger.Information("Using config from {ConfigOverride}", args.ConfigOverride);
+                    config = ConfigParser.LoadFromFile(args.ConfigOverride);
+                }
             }
             else
             {
@@ -259,7 +310,8 @@ namespace BililiveRecorder.Cli
                             services.AddSingleton(new BasicAuthCredential(sharedArguments.HttpBasicUser ?? string.Empty, sharedArguments.HttpBasicPass ?? string.Empty));
                         }
 
-                        if (sharedArguments.HttpOpenAccess || Environment.GetEnvironmentVariable("BREC_HTTP_OPEN_ACCESS") is not null){
+                        if (sharedArguments.HttpOpenAccess || Environment.GetEnvironmentVariable("BREC_HTTP_OPEN_ACCESS") is not null)
+                        {
                             services.AddSingleton(new DisableOpenAccessWarningConfig());
                         }
                     })
@@ -289,7 +341,7 @@ namespace BililiveRecorder.Cli
                                 {
                                     listenOptions.UseHttps(LoadCertificate(sharedArguments, logger) ?? GenerateSelfSignedCertificate(logger), https =>
                                     {
-                                        https.SslProtocols = SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13;
+                                        https.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
                                     });
                                 }
                             }
@@ -499,10 +551,10 @@ namespace BililiveRecorder.Cli
                 .Enrich.WithProcessId()
                 .Enrich.WithThreadId()
                 .Enrich.WithThreadName()
-                .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .Destructure.AsScalar<IPAddress>()
                 .Destructure.AsScalar<ProcessingComment>()
+                .Destructure.AsScalar<StreamCodecQn>()
                 .Destructure.ByTransforming<Flv.Xml.XmlFlvFile.XmlFlvFileMeta>(x => new
                 {
                     x.Version,

@@ -56,6 +56,7 @@
             <GroupBox Header="标准模式录制修复设置">
                 <StackPanel>
                     <ui:ToggleSwitch IsOn="{Binding FlvProcessorSplitOnScriptTag}" OnContent="检测到可能缺少数据时分段" OffContent="检测到可能缺少数据时分段"/>
+                    <ui:ToggleSwitch IsOn="{Binding FlvProcessorDisableSplitOnH264AnnexB}" OnContent="使用实验性花屏修复判定逻辑" OffContent="使用实验性花屏修复判定逻辑"/>
                 </StackPanel>
             </GroupBox>
             <GroupBox Header="{l:Loc Settings_Splitting_Title}">
@@ -129,6 +130,13 @@
                         <TextBox Text="{Binding RecordingQuality,UpdateSourceTrigger=PropertyChanged,Delay=1000}"
                                  ui:TextBoxHelper.IsDeleteButtonVisible="False" Width="220" HorizontalAlignment="Left"/>
                     </c:SettingWithDefault>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="录制条件">
+                <StackPanel>
+                    <TextBlock Margin="5" Text="跳过录制的直播标题正则匹配表达式，每行一个" />
+                    <TextBox Margin="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible"
+                         Text="{Binding TitleFilterPatterns,UpdateSourceTrigger=PropertyChanged,Delay=1000}" ui:TextBoxHelper.IsDeleteButtonVisible="False"/>
                 </StackPanel>
             </GroupBox>
             <GroupBox Header="{l:Loc Settings_Webhook_Title}">

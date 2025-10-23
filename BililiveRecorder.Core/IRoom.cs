@@ -39,5 +39,7 @@ namespace BililiveRecorder.Core
         void StopRecord();
         void SplitOutput();
         Task RefreshRoomInfoAsync();
+
+        void MarkNextRecordShouldUseRawMode();
     }
 }

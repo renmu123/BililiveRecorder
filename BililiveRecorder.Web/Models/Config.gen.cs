@@ -25,6 +25,8 @@ namespace BililiveRecorder.Web.Models
         public Optional<bool>? OptionalSaveStreamCover { get; set; }
         public Optional<string?>? OptionalRecordingQuality { get; set; }
         public Optional<bool>? OptionalFlvProcessorSplitOnScriptTag { get; set; }
+        public Optional<bool>? OptionalFlvProcessorDisableSplitOnH264AnnexB { get; set; }
+        public Optional<string?>? OptionalTitleFilterPatterns { get; set; }
 
         public void ApplyTo(RoomConfig config)
         {
@@ -41,6 +43,8 @@ namespace BililiveRecorder.Web.Models
             if (this.OptionalSaveStreamCover.HasValue) config.OptionalSaveStreamCover = this.OptionalSaveStreamCover.Value;
             if (this.OptionalRecordingQuality.HasValue) config.OptionalRecordingQuality = this.OptionalRecordingQuality.Value;
             if (this.OptionalFlvProcessorSplitOnScriptTag.HasValue) config.OptionalFlvProcessorSplitOnScriptTag = this.OptionalFlvProcessorSplitOnScriptTag.Value;
+            if (this.OptionalFlvProcessorDisableSplitOnH264AnnexB.HasValue) config.OptionalFlvProcessorDisableSplitOnH264AnnexB = this.OptionalFlvProcessorDisableSplitOnH264AnnexB.Value;
+            if (this.OptionalTitleFilterPatterns.HasValue) config.OptionalTitleFilterPatterns = this.OptionalTitleFilterPatterns.Value;
         }
     }
 
@@ -59,7 +63,9 @@ namespace BililiveRecorder.Web.Models
         public Optional<string?>? OptionalRecordingQuality { get; set; }
         public Optional<string?>? OptionalFileNameRecordTemplate { get; set; }
         public Optional<bool>? OptionalFlvProcessorSplitOnScriptTag { get; set; }
+        public Optional<bool>? OptionalFlvProcessorDisableSplitOnH264AnnexB { get; set; }
         public Optional<bool>? OptionalFlvWriteMetadata { get; set; }
+        public Optional<string?>? OptionalTitleFilterPatterns { get; set; }
         public Optional<string?>? OptionalWebHookUrls { get; set; }
         public Optional<string?>? OptionalWebHookUrlsV2 { get; set; }
         public Optional<bool>? OptionalWpfShowTitleAndArea { get; set; }
@@ -95,7 +101,9 @@ namespace BililiveRecorder.Web.Models
             if (this.OptionalRecordingQuality.HasValue) config.OptionalRecordingQuality = this.OptionalRecordingQuality.Value;
             if (this.OptionalFileNameRecordTemplate.HasValue) config.OptionalFileNameRecordTemplate = this.OptionalFileNameRecordTemplate.Value;
             if (this.OptionalFlvProcessorSplitOnScriptTag.HasValue) config.OptionalFlvProcessorSplitOnScriptTag = this.OptionalFlvProcessorSplitOnScriptTag.Value;
+            if (this.OptionalFlvProcessorDisableSplitOnH264AnnexB.HasValue) config.OptionalFlvProcessorDisableSplitOnH264AnnexB = this.OptionalFlvProcessorDisableSplitOnH264AnnexB.Value;
             if (this.OptionalFlvWriteMetadata.HasValue) config.OptionalFlvWriteMetadata = this.OptionalFlvWriteMetadata.Value;
+            if (this.OptionalTitleFilterPatterns.HasValue) config.OptionalTitleFilterPatterns = this.OptionalTitleFilterPatterns.Value;
             if (this.OptionalWebHookUrls.HasValue) config.OptionalWebHookUrls = this.OptionalWebHookUrls.Value;
             if (this.OptionalWebHookUrlsV2.HasValue) config.OptionalWebHookUrlsV2 = this.OptionalWebHookUrlsV2.Value;
             if (this.OptionalWpfShowTitleAndArea.HasValue) config.OptionalWpfShowTitleAndArea = this.OptionalWpfShowTitleAndArea.Value;
@@ -137,6 +145,8 @@ namespace BililiveRecorder.Web.Models.Rest
         public Optional<bool> OptionalSaveStreamCover { get; set; }
         public Optional<string?> OptionalRecordingQuality { get; set; }
         public Optional<bool> OptionalFlvProcessorSplitOnScriptTag { get; set; }
+        public Optional<bool> OptionalFlvProcessorDisableSplitOnH264AnnexB { get; set; }
+        public Optional<string?> OptionalTitleFilterPatterns { get; set; }
     }
 
     public class GlobalConfigDto
@@ -154,7 +164,9 @@ namespace BililiveRecorder.Web.Models.Rest
         public Optional<string?> OptionalRecordingQuality { get; set; }
         public Optional<string?> OptionalFileNameRecordTemplate { get; set; }
         public Optional<bool> OptionalFlvProcessorSplitOnScriptTag { get; set; }
+        public Optional<bool> OptionalFlvProcessorDisableSplitOnH264AnnexB { get; set; }
         public Optional<bool> OptionalFlvWriteMetadata { get; set; }
+        public Optional<string?> OptionalTitleFilterPatterns { get; set; }
         public Optional<string?> OptionalWebHookUrls { get; set; }
         public Optional<string?> OptionalWebHookUrlsV2 { get; set; }
         public Optional<bool> OptionalWpfShowTitleAndArea { get; set; }
@@ -198,6 +210,8 @@ namespace BililiveRecorder.Web.Models.Graphql
             this.Field(x => x.OptionalSaveStreamCover, type: typeof(HierarchicalOptionalType<bool>));
             this.Field(x => x.OptionalRecordingQuality, type: typeof(HierarchicalOptionalType<string>));
             this.Field(x => x.OptionalFlvProcessorSplitOnScriptTag, type: typeof(HierarchicalOptionalType<bool>));
+            this.Field(x => x.OptionalFlvProcessorDisableSplitOnH264AnnexB, type: typeof(HierarchicalOptionalType<bool>));
+            this.Field(x => x.OptionalTitleFilterPatterns, type: typeof(HierarchicalOptionalType<string>));
         }
     }
 
@@ -218,7 +232,9 @@ namespace BililiveRecorder.Web.Models.Graphql
             this.Field(x => x.OptionalRecordingQuality, type: typeof(HierarchicalOptionalType<string>));
             this.Field(x => x.OptionalFileNameRecordTemplate, type: typeof(HierarchicalOptionalType<string>));
             this.Field(x => x.OptionalFlvProcessorSplitOnScriptTag, type: typeof(HierarchicalOptionalType<bool>));
+            this.Field(x => x.OptionalFlvProcessorDisableSplitOnH264AnnexB, type: typeof(HierarchicalOptionalType<bool>));
             this.Field(x => x.OptionalFlvWriteMetadata, type: typeof(HierarchicalOptionalType<bool>));
+            this.Field(x => x.OptionalTitleFilterPatterns, type: typeof(HierarchicalOptionalType<string>));
             this.Field(x => x.OptionalWebHookUrls, type: typeof(HierarchicalOptionalType<string>));
             this.Field(x => x.OptionalWebHookUrlsV2, type: typeof(HierarchicalOptionalType<string>));
             this.Field(x => x.OptionalWpfShowTitleAndArea, type: typeof(HierarchicalOptionalType<bool>));
@@ -258,7 +274,9 @@ namespace BililiveRecorder.Web.Models.Graphql
             this.Field(x => x.RecordingQuality);
             this.Field(x => x.FileNameRecordTemplate);
             this.Field(x => x.FlvProcessorSplitOnScriptTag);
+            this.Field(x => x.FlvProcessorDisableSplitOnH264AnnexB);
             this.Field(x => x.FlvWriteMetadata);
+            this.Field(x => x.TitleFilterPatterns);
             this.Field(x => x.WebHookUrls);
             this.Field(x => x.WebHookUrlsV2);
             this.Field(x => x.WpfShowTitleAndArea);
@@ -298,6 +316,8 @@ namespace BililiveRecorder.Web.Models.Graphql
             this.Field(x => x.OptionalSaveStreamCover, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
             this.Field(x => x.OptionalRecordingQuality, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
             this.Field(x => x.OptionalFlvProcessorSplitOnScriptTag, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
+            this.Field(x => x.OptionalFlvProcessorDisableSplitOnH264AnnexB, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
+            this.Field(x => x.OptionalTitleFilterPatterns, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
         }
     }
 
@@ -318,7 +338,9 @@ namespace BililiveRecorder.Web.Models.Graphql
             this.Field(x => x.OptionalRecordingQuality, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
             this.Field(x => x.OptionalFileNameRecordTemplate, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
             this.Field(x => x.OptionalFlvProcessorSplitOnScriptTag, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
+            this.Field(x => x.OptionalFlvProcessorDisableSplitOnH264AnnexB, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
             this.Field(x => x.OptionalFlvWriteMetadata, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
+            this.Field(x => x.OptionalTitleFilterPatterns, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
             this.Field(x => x.OptionalWebHookUrls, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
             this.Field(x => x.OptionalWebHookUrlsV2, nullable: true, type: typeof(HierarchicalOptionalInputType<string>));
             this.Field(x => x.OptionalWpfShowTitleAndArea, nullable: true, type: typeof(HierarchicalOptionalInputType<bool>));
