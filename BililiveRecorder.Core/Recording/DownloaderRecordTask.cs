@@ -31,6 +31,7 @@ namespace BililiveRecorder.Core.Recording
         private readonly ProcessingDelegate pipeline;
         private readonly IFlvWriterTargetProvider targetProvider;
 
+        private readonly StatsRule statsRule;
         private readonly SplitRule splitFileRule;
 
         private readonly FlvProcessingContext context = new FlvProcessingContext();
@@ -70,14 +71,17 @@ namespace BililiveRecorder.Core.Recording
             if (builder is null)
                 throw new ArgumentNullException(nameof(builder));
 
+            this.statsRule = new StatsRule();
             this.splitFileRule = new SplitRule();
 
+            this.statsRule.StatsUpdated += this.StatsRule_StatsUpdated;
 
             this.pipeline = builder
                 .ConfigureServices(services => services.AddSingleton(new ProcessingPipelineSettings
                 {
                     SplitOnScriptTag = true,
                 }))
+                .AddRule(this.statsRule)
                 .AddRule(this.splitFileRule)
                 .AddDefaultRules()
                 .AddRemoveFillerDataRule()
@@ -343,10 +347,34 @@ namespace BililiveRecorder.Core.Recording
             }
         }
 
+        private void StatsRule_StatsUpdated(object? sender, RecordingStatsEventArgs e)
+        {
+            var maxDuration = this.downloader.DownloaderConfig.MaxDuration;
+            var maxSize = this.downloader.DownloaderConfig.MaxSize;
+
+            // 按时长分割
+            if (maxDuration.HasValue && maxDuration.Value > 0)
+            {
+                if (e.FileMaxTimestamp > maxDuration.Value * 60u * 1000u)
+                    this.splitFileRule.SetSplitBeforeFlag();
+            }
+            
+            // 按大小分割
+            if (maxSize.HasValue && maxSize.Value > 0)
+            {
+                if ((e.CurrentFileSize + (e.OutputVideoBytes * 1.1) + e.OutputAudioBytes) / (1024d * 1024d) > maxSize.Value)
+                    this.splitFileRule.SetSplitBeforeFlag();
+            }
+
+            // this.OnRecordingStats(e);
+        }
+
         internal class WriterTargetProvider : IFlvWriterTargetProvider
         {
             private readonly DownloaderRecordTask task;
             private readonly string dstPath;
+            private int partIndex = 0;
+            private string last_path = string.Empty;
 
             public WriterTargetProvider(DownloaderRecordTask task, string dstPath)
             {
@@ -356,17 +384,29 @@ namespace BililiveRecorder.Core.Recording
 
             public (Stream stream, object? state) CreateOutputStream()
             {
+                var directory = Path.GetDirectoryName(this.dstPath)!;
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(this.dstPath);
+                var extension = Path.GetExtension(this.dstPath);
+                
+                var fullPath = Path.Combine(directory, $"{fileNameWithoutExtension}_PART{this.partIndex:D3}{extension}");
+                this.partIndex++;
+
                 try
-                { _ = Directory.CreateDirectory(Path.GetDirectoryName(this.dstPath)!); }
+                { _ = Directory.CreateDirectory(directory); }
                 catch (Exception) { }
 
-                var stream = new FileStream(this.dstPath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read | FileShare.Delete);
+                this.last_path = fullPath;
+                this.task.logger.Information("创建录制文件 '{Path}'", fullPath);
+
+                var stream = new FileStream(fullPath, FileMode.Create, FileAccess.ReadWrite, FileShare.Read | FileShare.Delete);
                 return (stream, null);
             }
 
             public Stream CreateAccompanyingTextLogStream()
             {
-                var path = Path.ChangeExtension(this.dstPath, "txt");
+                var path = string.IsNullOrWhiteSpace(this.last_path)
+                    ? Path.ChangeExtension(this.dstPath, "txt")
+                    : Path.ChangeExtension(this.last_path, "txt");
 
                 try
                 { _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!); }

@@ -112,6 +112,8 @@ namespace BililiveRecorder.Cli
                     {
                         new Option<string>(new []{ "--cookie", "-c" }, "Cookie string for api requests"),
                         new Option<IEnumerable<string>>(new string[]{ "--download-header", "-h" }, "Http header for downloader"),
+                        new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
+                        new Option<int?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
 
                         new Argument<string>("url"),
                         new Argument<string>("output-path"),
@@ -267,7 +269,7 @@ namespace BililiveRecorder.Cli
             var serviceProvider = BuildServiceProvider(logger);
 
             var downloaderFactory = serviceProvider.GetRequiredService<IDownloaderFactory>();
-            DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders);
+            DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders, args.MaxSize, args.MaxDuration);
             var downloader = downloaderFactory.CreateDownloader(config);
             await downloader.StartRecord(serviceProvider);
 
@@ -670,6 +672,10 @@ namespace BililiveRecorder.Cli
             public string? Cookie { get; set; }
 
             public IEnumerable<string>? DownloadHeaders { get; set; }
+
+            public int? MaxSize { get; set; }
+
+            public int? MaxDuration { get; set; }
 
             public string Url { get; set; } = string.Empty;
 

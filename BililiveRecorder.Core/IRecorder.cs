@@ -22,6 +22,7 @@ namespace BililiveRecorder.Core
         IRoom AddRoom(int roomid);
         IRoom AddRoom(int roomid, bool enabled);
         void RemoveRoom(IRoom room);
+        // protected void OnRecordingStats(RecordingStatsEventArgs e) => RecordingStats?.Invoke(this, e);
 
         void SaveConfig();
     }
