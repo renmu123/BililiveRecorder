@@ -110,6 +110,7 @@ namespace BililiveRecorder.Cli
 
                     var cmd_downloader = new Command("downloader", "Run BililiveRecorder as downloader")
                     {
+                        new Option<LogEventLevel>(new []{ "--loglevel", "--log", "-l" }, () => LogEventLevel.Information, "Minimal log level output to console (Verbose|Debug|Information|Warning|Error|Fatal)"),
                         new Option<string>(new []{ "--cookie", "-c" }, "Cookie string for api requests"),
                         new Option<IEnumerable<string>>(new string[]{ "--download-header", "-h" }, "Http header for downloader"),
                         new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
@@ -263,7 +264,7 @@ namespace BililiveRecorder.Cli
 
         private static async Task<int> RunDownloaderModeAsync(DownloaderArguments args)
         {
-            using var logger = BuildLogger(args.LogLevel, args.LogFileLevel, enableWebLog: args.HttpBind is not null);
+            using var logger = BuildLogger(args.LogLevel, LogEventLevel.Information, enableWebLog: false, enableLogFile: true);
             Log.Logger = logger;
 
             var serviceProvider = BuildServiceProvider(logger);
@@ -536,7 +537,7 @@ namespace BililiveRecorder.Cli
             .AddRecorder()
             .BuildServiceProvider();
 
-        private static Logger BuildLogger(LogEventLevel logLevel, LogEventLevel logFileLevel, bool enableWebLog = false)
+        private static Logger BuildLogger(LogEventLevel logLevel, LogEventLevel logFileLevel, bool enableWebLog = false, bool enableLogFile = true)
         {
             var logFilePath = Environment.GetEnvironmentVariable("BILILIVERECORDER_LOG_FILE_PATH");
             if (string.IsNullOrWhiteSpace(logFilePath))
@@ -564,21 +565,26 @@ namespace BililiveRecorder.Cli
                     x.FileSize,
                     x.FileCreationTime,
                     x.FileModificationTime,
-                })
-                .WriteTo.Logger(sl =>
-                {
-                    sl
-                    .Filter.ByExcluding(matchMicrosoft)
-                    .WriteTo.File(new CompactJsonFormatter(), logFilePath, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
-                    ;
-                })
-                .WriteTo.Logger(sl =>
-                {
-                    sl
-                    .Filter.ByIncludingOnly(matchMicrosoft)
-                    .WriteTo.File(new CompactJsonFormatter(), logFilePathMicrosoft, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
-                    ;
                 });
+
+            if (enableLogFile)
+            {
+                builder
+                    .WriteTo.Logger(sl =>
+                    {
+                        sl
+                        .Filter.ByExcluding(matchMicrosoft)
+                        .WriteTo.File(new CompactJsonFormatter(), logFilePath, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
+                        ;
+                    })
+                    .WriteTo.Logger(sl =>
+                    {
+                        sl
+                        .Filter.ByIncludingOnly(matchMicrosoft)
+                        .WriteTo.File(new CompactJsonFormatter(), logFilePathMicrosoft, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
+                        ;
+                    });
+            }
 
             if (enableWebLog)
             {
