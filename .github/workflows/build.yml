@@ -1,9 +1,6 @@
 name: Build and Test
 
 on:
-  push:
-    branches:
-      - "**"
   pull_request:
   workflow_dispatch:
 
@@ -80,8 +77,18 @@ jobs:
     # needs: test
     strategy:
       matrix:
-        # rid: [any, linux-arm, linux-arm64, linux-x64, osx-x64, osx-arm64, win-x64]
-        rid: [any]
+        rid:
+          [
+            any,
+            linux-arm,
+            linux-arm64,
+            linux-musl-arm64,
+            linux-x64,
+            linux-musl-x64,
+            osx-x64,
+            osx-arm64,
+            win-x64,
+          ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
