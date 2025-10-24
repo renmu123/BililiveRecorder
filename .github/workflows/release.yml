@@ -12,31 +12,31 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # test:
-  #   strategy:
-  #     matrix:
-  #       os: [windows-latest, ubuntu-latest]
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
-  #         submodules: recursive
+  test:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
 
-  #     - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
 
-  #     - name: Make sure webui can be built
-  #       if: "${{ matrix.os == 'windows-latest' }}"
-  #       run: ./webui/build.ps1
-  #     - name: Make sure webui can be built
-  #       if: "${{ matrix.os == 'ubuntu-latest' }}"
-  #       run: ./webui/build.sh
+      # - name: Make sure webui can be built
+      #   if: "${{ matrix.os == 'windows-latest' }}"
+      #   run: ./webui/build.ps1
+      # - name: Make sure webui can be built
+      #   if: "${{ matrix.os == 'ubuntu-latest' }}"
+      #   run: ./webui/build.sh
 
-  #     - name: Run Tests - Debug
-  #       run: dotnet test -v m -c Debug
-  #     - name: Run Tests - Release
-  #       run: dotnet test -v m -c Release
+      - name: Run Tests - Debug
+        run: dotnet test -v m -c Debug
+      - name: Run Tests - Release
+        run: dotnet test -v m -c Release
 
   # release_wpf:
   #   needs: test # Tests must be passed before releasing
@@ -46,23 +46,23 @@ jobs:
   #   runs-on: windows-latest
   #   steps:
   #     - name: Checkout
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
   #       with:
   #         fetch-depth: 0
   #         submodules: recursive
   #     - name: Add msbuild to PATH
-  #       uses: microsoft/setup-msbuild@v1
+  #       uses: microsoft/setup-msbuild@v2
   #     - name: Restore Packages
   #       run: msbuild -t:restore /v:m BililiveRecorder.WPF/BililiveRecorder.WPF.csproj
   #     - name: Build WPF
   #       run: msbuild /nologo /v:m /p:Configuration="${{ matrix.build_configuration }}" BililiveRecorder.WPF/BililiveRecorder.WPF.csproj
   #     - name: Upload Build Artifacts
-  #       uses: actions/upload-artifact@v3
+  #       uses: actions/upload-artifact@v4
   #       with:
   #         name: WPF-${{ matrix.build_configuration }}
   #         path: BililiveRecorder.WPF/bin/${{ matrix.build_configuration }}
   #     - name: Upload Packed Artifacts
-  #       uses: actions/upload-artifact@v3
+  #       uses: actions/upload-artifact@v4
   #       with:
   #         name: WPF-NupkgReleases
   #         path: BililiveRecorder.WPF/bin/NupkgReleases
@@ -81,11 +81,21 @@ jobs:
   #         asset_content_type: application/zip
 
   release_cli:
-    # needs: test # Tests must be passed before releasing
+    needs: test # Tests must be passed before releasing
     strategy:
       matrix:
-        # rid: [any, linux-arm, linux-arm64, linux-x64, osx-x64, osx-arm64, win-x64]
-        rid: [any]
+        rid:
+          [
+            any,
+            linux-arm,
+            linux-arm64,
+            linux-musl-arm64,
+            linux-x64,
+            linux-musl-x64,
+            osx-x64,
+            osx-arm64,
+            win-x64,
+          ]
         build_configuration: [Release]
     runs-on: ubuntu-latest
     steps:
@@ -103,9 +113,9 @@ jobs:
       - name: Build CLI
         if: ${{ matrix.rid == 'any' }}
         run: dotnet publish -c ${{ matrix.build_configuration }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj
-      # - name: Build CLI
-      #   if: ${{ matrix.rid != 'any' }}
-      #   run: dotnet publish -c ${{ matrix.build_configuration }} -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj
+      - name: Build CLI
+        if: ${{ matrix.rid != 'any' }}
+        run: dotnet publish -c ${{ matrix.build_configuration }} -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -136,27 +146,27 @@ jobs:
   #     packages: write
   #   steps:
   #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
   #       with:
   #         fetch-depth: 0
   #         submodules: recursive
   #     - name: Set up QEMU
-  #       uses: docker/setup-qemu-action@v2
+  #       uses: docker/setup-qemu-action@v3
   #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
+  #       uses: docker/setup-buildx-action@v3
 
   #     # Login against a Docker registry except on PR
   #     # https://github.com/docker/login-action
   #     - name: Login to GitHub Container Registry
   #       if: github.event_name != 'pull_request'
-  #       uses: docker/login-action@v2
+  #       uses: docker/login-action@v3
   #       with:
   #         registry: ghcr.io
   #         username: ${{ github.actor }}
   #         password: ${{ secrets.GITHUB_TOKEN }}
   #     - name: Login to Docker Hub
   #       if: github.event_name != 'pull_request'
-  #       uses: docker/login-action@v2
+  #       uses: docker/login-action@v3
   #       with:
   #         username: ${{ secrets.DOCKERHUB_USERNAME }}
   #         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -165,7 +175,7 @@ jobs:
   #     # https://github.com/docker/metadata-action
   #     - name: Extract Docker metadata
   #       id: meta
-  #       uses: docker/metadata-action@v4
+  #       uses: docker/metadata-action@v5
   #       with:
   #         images: |
   #           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -182,7 +192,7 @@ jobs:
   #     # Build and push Docker image with Buildx (don't push on PR)
   #     # https://github.com/docker/build-push-action
   #     - name: Build and push Docker image
-  #       uses: docker/build-push-action@v4
+  #       uses: docker/build-push-action@v6
   #       with:
   #         context: .
   #         file: ./Dockerfile.GitHubActions

@@ -5,6 +5,7 @@ on:
     branches:
       - "**"
   pull_request:
+  workflow_dispatch:
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -101,23 +102,23 @@ jobs:
         if: ${{ matrix.rid == 'any' }}
         run: dotnet publish -c Release BililiveRecorder.Cli/BililiveRecorder.Cli.csproj
 
-      # - name: Build CLI - Debug
-      #   if: ${{ matrix.rid != 'any' }}
-      #   run: dotnet publish -c Debug -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj
-      # - name: Build CLI - Release
-      #   if: ${{ matrix.rid != 'any' }}
-      #   run: dotnet publish -c Release -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj
+      - name: Build CLI - Debug
+        if: ${{ matrix.rid != 'any' }}
+        run: dotnet publish -c Debug -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
+      - name: Build CLI - Release
+        if: ${{ matrix.rid != 'any' }}
+        run: dotnet publish -c Release -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
-      # - name: Upload Artifacts - Debug
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: CLI-${{ matrix.rid }}-Debug
-      #     path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Debug
-      # - name: Upload Artifacts - Release
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: CLI-${{ matrix.rid }}-Release
-      #     path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Release
+      - name: Upload Artifacts - Debug
+        uses: actions/upload-artifact@v3
+        with:
+          name: CLI-${{ matrix.rid }}-Debug
+          path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Debug
+      - name: Upload Artifacts - Release
+        uses: actions/upload-artifact@v3
+        with:
+          name: CLI-${{ matrix.rid }}-Release
+          path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Release
 
   # build_docker:
   #   # Tests can be run parallelly for debug builds to save time
