@@ -110,10 +110,12 @@ namespace BililiveRecorder.Cli
 
                     var cmd_downloader = new Command("downloader", "Run BililiveRecorder as downloader")
                     {
+                        new Option<LogEventLevel>(new []{ "--loglevel", "--log", "-l" }, () => LogEventLevel.Information, "Minimal log level output to console (Verbose|Debug|Information|Warning|Error|Fatal)"),
                         new Option<string>(new []{ "--cookie", "-c" }, "Cookie string for api requests"),
-                        new Option<IEnumerable<string>>(new string[]{ "--download-header", "-h" }, "Http header for downloader"),
+                        new Option<IEnumerable<string>>(new string[]{ "--download-headers", "-h" }, "Http header for downloader"),
                         new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
                         new Option<int?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
+                        new Option<bool>(new []{ "--disable-log-file" }, () => false, "Disable log file output"),
 
                         new Argument<string>("url"),
                         new Argument<string>("output-path"),
@@ -263,7 +265,7 @@ namespace BililiveRecorder.Cli
 
         private static async Task<int> RunDownloaderModeAsync(DownloaderArguments args)
         {
-            using var logger = BuildLogger(args.LogLevel, args.LogFileLevel, enableWebLog: args.HttpBind is not null);
+            using var logger = BuildLogger(args.LogLevel, LogEventLevel.Information, enableWebLog: false, enableLogFile: !args.DisableLogFile);
             Log.Logger = logger;
 
             var serviceProvider = BuildServiceProvider(logger);
@@ -536,7 +538,7 @@ namespace BililiveRecorder.Cli
             .AddRecorder()
             .BuildServiceProvider();
 
-        private static Logger BuildLogger(LogEventLevel logLevel, LogEventLevel logFileLevel, bool enableWebLog = false)
+        private static Logger BuildLogger(LogEventLevel logLevel, LogEventLevel logFileLevel, bool enableWebLog = false, bool enableLogFile = true)
         {
             var logFilePath = Environment.GetEnvironmentVariable("BILILIVERECORDER_LOG_FILE_PATH");
             if (string.IsNullOrWhiteSpace(logFilePath))
@@ -564,21 +566,26 @@ namespace BililiveRecorder.Cli
                     x.FileSize,
                     x.FileCreationTime,
                     x.FileModificationTime,
-                })
-                .WriteTo.Logger(sl =>
-                {
-                    sl
-                    .Filter.ByExcluding(matchMicrosoft)
-                    .WriteTo.File(new CompactJsonFormatter(), logFilePath, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
-                    ;
-                })
-                .WriteTo.Logger(sl =>
-                {
-                    sl
-                    .Filter.ByIncludingOnly(matchMicrosoft)
-                    .WriteTo.File(new CompactJsonFormatter(), logFilePathMicrosoft, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
-                    ;
                 });
+
+            if (enableLogFile)
+            {
+                builder
+                    .WriteTo.Logger(sl =>
+                    {
+                        sl
+                        .Filter.ByExcluding(matchMicrosoft)
+                        .WriteTo.File(new CompactJsonFormatter(), logFilePath, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
+                        ;
+                    })
+                    .WriteTo.Logger(sl =>
+                    {
+                        sl
+                        .Filter.ByIncludingOnly(matchMicrosoft)
+                        .WriteTo.File(new CompactJsonFormatter(), logFilePathMicrosoft, restrictedToMinimumLevel: logFileLevel, shared: true, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
+                        ;
+                    });
+            }
 
             if (enableWebLog)
             {
@@ -676,6 +683,8 @@ namespace BililiveRecorder.Cli
             public int? MaxSize { get; set; }
 
             public int? MaxDuration { get; set; }
+
+            public bool DisableLogFile { get; set; }
 
             public string Url { get; set; } = string.Empty;
 
