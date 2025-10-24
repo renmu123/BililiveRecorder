@@ -112,9 +112,10 @@ namespace BililiveRecorder.Cli
                     {
                         new Option<LogEventLevel>(new []{ "--loglevel", "--log", "-l" }, () => LogEventLevel.Information, "Minimal log level output to console (Verbose|Debug|Information|Warning|Error|Fatal)"),
                         new Option<string>(new []{ "--cookie", "-c" }, "Cookie string for api requests"),
-                        new Option<IEnumerable<string>>(new string[]{ "--download-header", "-h" }, "Http header for downloader"),
+                        new Option<IEnumerable<string>>(new string[]{ "--download-headers", "-h" }, "Http header for downloader"),
                         new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
                         new Option<int?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
+                        new Option<bool>(new []{ "--disable-log-file" }, () => false, "Disable log file output"),
 
                         new Argument<string>("url"),
                         new Argument<string>("output-path"),
@@ -264,7 +265,7 @@ namespace BililiveRecorder.Cli
 
         private static async Task<int> RunDownloaderModeAsync(DownloaderArguments args)
         {
-            using var logger = BuildLogger(args.LogLevel, LogEventLevel.Information, enableWebLog: false, enableLogFile: true);
+            using var logger = BuildLogger(args.LogLevel, LogEventLevel.Information, enableWebLog: false, enableLogFile: !args.DisableLogFile);
             Log.Logger = logger;
 
             var serviceProvider = BuildServiceProvider(logger);
@@ -682,6 +683,8 @@ namespace BililiveRecorder.Cli
             public int? MaxSize { get; set; }
 
             public int? MaxDuration { get; set; }
+
+            public bool DisableLogFile { get; set; }
 
             public string Url { get; set; } = string.Empty;
 
