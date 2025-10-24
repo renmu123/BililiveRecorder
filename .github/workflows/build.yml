@@ -110,12 +110,12 @@ jobs:
         run: dotnet publish -c Release -r ${{ matrix.rid }} BililiveRecorder.Cli/BililiveRecorder.Cli.csproj --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true
 
       - name: Upload Artifacts - Debug
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CLI-${{ matrix.rid }}-Debug
           path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Debug
       - name: Upload Artifacts - Release
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CLI-${{ matrix.rid }}-Release
           path: BililiveRecorder.Cli/publish/${{ matrix.rid }}/Release
