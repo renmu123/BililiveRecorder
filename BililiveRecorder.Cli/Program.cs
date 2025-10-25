@@ -113,6 +113,7 @@ namespace BililiveRecorder.Cli
                         new Option<LogEventLevel>(new []{ "--loglevel", "--log", "-l" }, () => LogEventLevel.Information, "Minimal log level output to console (Verbose|Debug|Information|Warning|Error|Fatal)"),
                         new Option<string>(new []{ "--cookie", "-c" }, "Cookie string for api requests"),
                         new Option<IEnumerable<string>>(new string[]{ "--download-headers", "-h" }, "Http header for downloader"),
+                        new Option<bool>(new []{ "--progress", "-p" }, () => false, "Show recording progress"),
                         new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
                         new Option<int?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
                         new Option<bool>(new []{ "--disable-log-file" }, () => false, "Disable log file output"),
@@ -273,6 +274,17 @@ namespace BililiveRecorder.Cli
             var downloaderFactory = serviceProvider.GetRequiredService<IDownloaderFactory>();
             DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders, args.MaxSize, args.MaxDuration);
             var downloader = downloaderFactory.CreateDownloader(config);
+
+            if (args.Progress)
+            {
+                downloader.RecordingStats += (sender, e) =>
+                {
+                    var sessionTime = TimeSpan.FromMilliseconds(e.SessionMaxTimestamp);
+                    var fileTime = TimeSpan.FromMilliseconds(e.FileMaxTimestamp);
+                    var fileSizeMB = e.CurrentFileSize / 1024.0 / 1024.0;
+                    Console.Write($"下载进度: {fileSizeMB:F2} MB | 录制时长: {sessionTime:hh\\:mm\\:ss} | 当前文件: {fileTime:hh\\:mm\\:ss}    ");
+                };
+            }
             await downloader.StartRecord(serviceProvider);
 
             return 0;
@@ -689,6 +701,8 @@ namespace BililiveRecorder.Cli
             public string Url { get; set; } = string.Empty;
 
             public string OutputPath { get; set; } = string.Empty;
+            
+            public bool Progress { get; set; }
         }
 
         private static class ConsoleModeHelper

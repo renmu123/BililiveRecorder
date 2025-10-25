@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BililiveRecorder.Core.Event;
 
 namespace BililiveRecorder.Core
 {
@@ -10,6 +11,13 @@ namespace BililiveRecorder.Core
         DownloaderConfig DownloaderConfig { get; }
 
         Task StartRecord(IServiceProvider sp);
+
+        event EventHandler<RecordSessionStartedEventArgs>? RecordSessionStarted;
+        event EventHandler<RecordSessionEndedEventArgs>? RecordSessionEnded;
+        event EventHandler<RecordFileOpeningEventArgs>? RecordFileOpening;
+        event EventHandler<RecordFileClosedEventArgs>? RecordFileClosed;
+        event EventHandler<IOStatsEventArgs>? IOStats;
+        event EventHandler<RecordingStatsEventArgs>? RecordingStats;
     }
 
     public class DownloaderConfig
