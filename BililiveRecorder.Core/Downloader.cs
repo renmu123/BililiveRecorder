@@ -190,6 +190,13 @@ namespace BililiveRecorder.Core
                 var task = (IRecordTask)factory(this.serviceProvider, new[] { this });
                 this.recordTask = task;
 
+                // 订阅事件
+                task.IOStats += this.RecordTask_IOStats;
+                task.RecordingStats += this.RecordTask_RecordingStats;
+                task.RecordFileOpening += this.RecordTask_RecordFileOpening;
+                task.RecordFileClosed += this.RecordTask_RecordFileClosed;
+                task.RecordSessionEnded += this.RecordTask_RecordSessionEnded;
+
                 //await Task.Run(async () =>
                 {
                     try
@@ -257,6 +264,75 @@ namespace BililiveRecorder.Core
         //        _ = Task.Run(() => this.RestartAfterRecordTaskFailedAsync(restartRecordingReason));
         //    }
         //}
+
+        #endregion
+
+        #region Event Handlers
+
+        private void RecordTask_IOStats(object? sender, IOStatsEventArgs e)
+        {
+            this.Stats.StreamHost = e.StreamHost;
+            this.Stats.StartTime = e.StartTime;
+            this.Stats.EndTime = e.EndTime;
+            this.Stats.Duration = e.Duration;
+            this.Stats.NetworkBytesDownloaded = e.NetworkBytesDownloaded;
+            this.Stats.NetworkMbps = e.NetworkMbps;
+            this.Stats.DiskWriteDuration = e.DiskWriteDuration;
+            this.Stats.DiskBytesWritten = e.DiskBytesWritten;
+            this.Stats.DiskMBps = e.DiskMBps;
+            IOStats?.Invoke(this, e);
+        }
+
+        private void RecordTask_RecordingStats(object? sender, RecordingStatsEventArgs e)
+        {
+            this.Stats.SessionDuration = TimeSpan.FromMilliseconds(e.SessionDuration);
+            this.Stats.TotalInputBytes = e.TotalInputBytes;
+            this.Stats.TotalOutputBytes = e.TotalOutputBytes;
+            this.Stats.CurrentFileSize = e.CurrentFileSize;
+            this.Stats.SessionMaxTimestamp = TimeSpan.FromMilliseconds(e.SessionMaxTimestamp);
+            this.Stats.FileMaxTimestamp = TimeSpan.FromMilliseconds(e.FileMaxTimestamp);
+            this.Stats.AddedDuration = e.AddedDuration;
+            this.Stats.PassedTime = e.PassedTime;
+            this.Stats.DurationRatio = e.DurationRatio;
+
+            this.Stats.InputVideoBytes = e.InputVideoBytes;
+            this.Stats.InputAudioBytes = e.InputAudioBytes;
+
+            this.Stats.OutputVideoFrames = e.OutputVideoFrames;
+            this.Stats.OutputAudioFrames = e.OutputAudioFrames;
+            this.Stats.OutputVideoBytes = e.OutputVideoBytes;
+            this.Stats.OutputAudioBytes = e.OutputAudioBytes;
+
+            this.Stats.TotalInputVideoBytes = e.TotalInputVideoBytes;
+            this.Stats.TotalInputAudioBytes = e.TotalInputAudioBytes;
+
+            this.Stats.TotalOutputVideoFrames = e.TotalOutputVideoFrames;
+            this.Stats.TotalOutputAudioFrames = e.TotalOutputAudioFrames;
+            this.Stats.TotalOutputVideoBytes = e.TotalOutputVideoBytes;
+            this.Stats.TotalOutputAudioBytes = e.TotalOutputAudioBytes;
+
+            RecordingStats?.Invoke(this, e);
+        }
+
+        private void RecordTask_RecordFileOpening(object? sender, RecordFileOpeningEventArgs e)
+        {
+            RecordFileOpening?.Invoke(this, e);
+        }
+
+        private void RecordTask_RecordFileClosed(object? sender, RecordFileClosedEventArgs e)
+        {
+            RecordFileClosed?.Invoke(this, e);
+        }
+
+        private void RecordTask_RecordSessionEnded(object? sender, EventArgs e)
+        {
+            var sessionEndedArgs = new RecordSessionEndedEventArgs(null!)
+            {
+                SessionId = this.recordTask?.SessionId ?? Guid.Empty
+            };
+            RecordSessionEnded?.Invoke(this, sessionEndedArgs);
+            this.recordTask = null;
+        }
 
         #endregion
 
