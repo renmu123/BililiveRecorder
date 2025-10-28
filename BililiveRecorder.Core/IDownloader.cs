@@ -28,7 +28,9 @@ namespace BililiveRecorder.Core
         public readonly string OutputPath;
         public readonly int? MaxSize;
         public readonly int? MaxDuration;
-        public DownloaderConfig(string url, string outputPath, string? cookie, IEnumerable<string>? downloadHeaders, int? maxSize = null, int? maxDuration = null)
+        public readonly bool UseSystemProxy;
+        public readonly string? Proxy;
+        public DownloaderConfig(string url, string outputPath, string? cookie, IEnumerable<string>? downloadHeaders, int? maxSize = null, int? maxDuration = null, bool useSystemProxy = false, string? proxy = null)
         {
             Url = url;
             OutputPath = outputPath;
@@ -36,6 +38,8 @@ namespace BililiveRecorder.Core
             this.DownloadHeaders = downloadHeaders;
             this.MaxSize = maxSize;
             this.MaxDuration = maxDuration;
+            this.UseSystemProxy = useSystemProxy;
+            this.Proxy = proxy;
         }
     }
 }

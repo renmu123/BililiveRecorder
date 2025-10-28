@@ -117,6 +117,8 @@ namespace BililiveRecorder.Cli
                         new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
                         new Option<int?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
                         new Option<bool>(new []{ "--disable-log-file" }, () => false, "Disable log file output"),
+                        new Option<bool>(new []{ "--use-system-proxy" }, () => false, "Use system proxy settings"),
+                        new Option<string>(new []{ "--proxy" }, "Manual proxy address (e.g., http://127.0.0.1:7890)"),
 
                         new Argument<string>("url"),
                         new Argument<string>("output-path"),
@@ -272,7 +274,7 @@ namespace BililiveRecorder.Cli
             var serviceProvider = BuildServiceProvider(logger);
 
             var downloaderFactory = serviceProvider.GetRequiredService<IDownloaderFactory>();
-            DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders, args.MaxSize, args.MaxDuration);
+            DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders, args.MaxSize, args.MaxDuration, args.UseSystemProxy, args.Proxy);
             var downloader = downloaderFactory.CreateDownloader(config);
 
             if (args.Progress)
@@ -703,6 +705,10 @@ namespace BililiveRecorder.Cli
             public string OutputPath { get; set; } = string.Empty;
             
             public bool Progress { get; set; }
+
+            public bool UseSystemProxy { get; set; } = false;
+
+            public string? Proxy { get; set; }
         }
 
         private static class ConsoleModeHelper
