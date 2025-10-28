@@ -190,8 +190,7 @@ namespace BililiveRecorder.Core.Recording
             {
                 UseCookies = false,
                 UseDefaultCredentials = false,
-                //AllowAutoRedirect = false,
-                //UseProxy = this.room.RoomConfig.NetworkTransportUseSystemProxy,
+                UseProxy = this.downloader.DownloaderConfig.UseSystemProxy,
             })
             {
                 Timeout = TimeSpan.FromMilliseconds(10000)
