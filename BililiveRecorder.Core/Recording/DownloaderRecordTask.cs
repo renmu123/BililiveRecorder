@@ -186,12 +186,19 @@ namespace BililiveRecorder.Core.Recording
         }
         private HttpClient CreateHttpClient()
         {
-            var httpClient = new HttpClient(new HttpClientHandler
+            var handler = new HttpClientHandler
             {
                 UseCookies = false,
                 UseDefaultCredentials = false,
-                UseProxy = this.downloader.DownloaderConfig.UseSystemProxy,
-            })
+                UseProxy = this.downloader.DownloaderConfig.UseSystemProxy || !string.IsNullOrWhiteSpace(this.downloader.DownloaderConfig.Proxy),
+            };
+
+            if (!string.IsNullOrWhiteSpace(this.downloader.DownloaderConfig.Proxy))
+            {
+                handler.Proxy = new WebProxy(this.downloader.DownloaderConfig.Proxy);
+            }
+
+            var httpClient = new HttpClient(handler)
             {
                 Timeout = TimeSpan.FromMilliseconds(10000)
             };
