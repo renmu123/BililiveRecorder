@@ -40,6 +40,9 @@ namespace BililiveRecorder.Core.Recording
         private readonly FlvProcessingContext context = new FlvProcessingContext();
         private readonly IDictionary<object, object?> session = new Dictionary<object, object?>();
 
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
+        private readonly CancellationToken ct;
+
         private readonly Timer timer = new Timer(1000 * 2); // 每2秒更新一次统计
         private readonly object ioStatsLock = new();
         private int ioNetworkDownloadedBytes;
@@ -50,6 +53,8 @@ namespace BililiveRecorder.Core.Recording
         private int ioDiskWrittenBytes;
 
         private DateTimeOffset ioStatsLastTrigger;
+        private TimeSpan durationSinceNoDataReceived;
+        private bool timeoutTriggered = false;
         private string? streamHost;
 
         private ITagGroupReader? reader;
@@ -89,6 +94,8 @@ namespace BililiveRecorder.Core.Recording
             this.statsRule = new StatsRule();
             this.splitFileRule = new SplitRule();
 
+            this.ct = this.cts.Token;
+
             this.statsRule.StatsUpdated += this.StatsRule_StatsUpdated;
 
             this.pipeline = builder
@@ -108,39 +115,40 @@ namespace BililiveRecorder.Core.Recording
         }
 
         void IRecordTask.SplitOutput() => throw new NotImplementedException();
+        
+        void IRecordTask.RequestStop() => this.cts.Cancel();
+        
         public async Task StartAsync()
         {
             var stream = await this.GetStreamAsync(fullUrl: this.downloader.DownloaderConfig.Url, timeout: 5 * 1000).ConfigureAwait(false);
 
             this.ioStatsLastTrigger = DateTimeOffset.UtcNow;
-            //this.durationSinceNoDataReceived = TimeSpan.Zero;
+            this.durationSinceNoDataReceived = TimeSpan.Zero;
 
-//            this.ct.Register(state => Task.Run(async () =>
-//            {
-//                try
-//                {
-//                    if (state is not WeakReference<Stream> weakRef)
-//                        return;
+            this.ct.Register(state => _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (state is not WeakReference<Stream> weakRef)
+                        return;
 
-//                    await Task.Delay(1000);
+                    await Task.Delay(1000);
 
-//                    if (weakRef.TryGetTarget(out var weakStream))
-//                    {
-//#if NET6_0_OR_GREATER
-//                        await weakStream.DisposeAsync();
-//#else
-//                        weakStream.Dispose();
-//#endif
-//                    }
-//                }
-//                catch (Exception)
-//                { }
-//            }), state: new WeakReference<Stream>(stream), useSynchronizationContext: false);
+                    if (weakRef.TryGetTarget(out var weakStream))
+                    {
+#if NET6_0_OR_GREATER
+                        await weakStream.DisposeAsync();
+#else
+                        weakStream.Dispose();
+#endif
+                    }
+                }
+                catch (Exception)
+                { }
+            }), state: new WeakReference<Stream>(stream), useSynchronizationContext: false);
 
             await this.StartRecordingLoop(stream);
         }
-
-        void IRecordTask.RequestStop() => throw new NotImplementedException();
 
         protected async Task<Stream> GetStreamAsync(string fullUrl, int timeout)
         {
@@ -263,13 +271,12 @@ namespace BililiveRecorder.Core.Recording
             Exception? exception = null;
             try
             {
-                //while (!this.ct.IsCancellationRequested)
-                while (true)
+                while (!this.ct.IsCancellationRequested)
                 {
                     var memory = writer.GetMemory(minimumBufferSize);
                     try
                     {
-                        var bytesRead = await stream.ReadAsync(memory).ConfigureAwait(false);
+                        var bytesRead = await stream.ReadAsync(memory, this.ct).ConfigureAwait(false);
                         if (bytesRead == 0)
                             break;
                         writer.Advance(bytesRead);
@@ -281,7 +288,7 @@ namespace BililiveRecorder.Core.Recording
                         break;
                     }
 
-                    var result = await writer.FlushAsync().ConfigureAwait(false);
+                    var result = await writer.FlushAsync(this.ct).ConfigureAwait(false);
                     if (result.IsCompleted)
                         break;
                 }
@@ -305,10 +312,9 @@ namespace BililiveRecorder.Core.Recording
                 if (this.reader is null) return;
                 if (this.writer is null) return;
 
-                //while (!this.ct.IsCancellationRequested)
-                while (true)
+                while (!this.ct.IsCancellationRequested)
                 {
-                    var group = await this.reader.ReadGroupAsync(CancellationToken.None).ConfigureAwait(false);
+                    var group = await this.reader.ReadGroupAsync(this.ct).ConfigureAwait(false);
 
                     if (group is null)
                         break;
@@ -398,7 +404,7 @@ namespace BililiveRecorder.Core.Recording
             TimeSpan durationDiff, diskWriteDuration;
             DateTimeOffset startTime, endTime;
 
-            lock (this.ioStatsLock)
+            lock (this.ioStatsLock) // 锁 timer elapsed 事件本身防止并行运行
             {
                 // networks
                 networkDownloadBytes = Interlocked.Exchange(ref this.ioNetworkDownloadedBytes, 0);
@@ -406,6 +412,8 @@ namespace BililiveRecorder.Core.Recording
                 startTime = this.ioStatsLastTrigger;
                 this.ioStatsLastTrigger = endTime;
                 durationDiff = endTime - startTime;
+
+                this.durationSinceNoDataReceived = networkDownloadBytes > 0 ? TimeSpan.Zero : this.durationSinceNoDataReceived + durationDiff;
 
                 // disks
                 lock (this.ioDiskStatsLock)
@@ -432,6 +440,13 @@ namespace BililiveRecorder.Core.Recording
                 DiskWriteDuration = diskWriteDuration,
                 DiskMBps = diskMBps,
             });
+
+            if ((!this.timeoutTriggered) && (this.durationSinceNoDataReceived.TotalMilliseconds > this.downloader.DownloaderConfig.TimingWatchdogTimeout))
+            {
+                this.timeoutTriggered = true;
+                this.logger.Warning("检测到录制卡住，可能是网络或硬盘原因，将会主动断开连接");
+                this.cts.Cancel();
+            }
         }
 
         protected void OnIOStats(IOStatsEventArgs e) => IOStats?.Invoke(this, e);
