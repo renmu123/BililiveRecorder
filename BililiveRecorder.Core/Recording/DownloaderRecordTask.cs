@@ -101,7 +101,8 @@ namespace BililiveRecorder.Core.Recording
             this.pipeline = builder
                 .ConfigureServices(services => services.AddSingleton(new ProcessingPipelineSettings
                 {
-                    SplitOnScriptTag = true,
+                    SplitOnScriptTag = downloader.DownloaderConfig.SplitOnScriptTag,
+                    DisableSplitOnH264AnnexB = downloader.DownloaderConfig.DisableSplitOnH264AnnexB,
                 }))
                 .AddRule(this.statsRule)
                 .AddRule(this.splitFileRule)
