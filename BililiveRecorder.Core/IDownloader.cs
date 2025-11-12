@@ -31,7 +31,9 @@ namespace BililiveRecorder.Core
         public readonly bool UseSystemProxy;
         public readonly string? Proxy;
         public readonly uint TimingWatchdogTimeout;
-        public DownloaderConfig(string url, string outputPath, string? cookie, IEnumerable<string>? downloadHeaders, int? maxSize = null, int? maxDuration = null, bool useSystemProxy = false, string? proxy = null, uint timingWatchdogTimeout = 10000)
+        public readonly bool SplitOnScriptTag;
+        public readonly bool DisableSplitOnH264AnnexB;
+        public DownloaderConfig(string url, string outputPath, string? cookie, IEnumerable<string>? downloadHeaders, int? maxSize = null, int? maxDuration = null, bool useSystemProxy = false, string? proxy = null, uint timingWatchdogTimeout = 10000, bool splitOnScriptTag = false, bool disableSplitOnH264AnnexB = false)
         {
             Url = url;
             OutputPath = outputPath;
@@ -42,6 +44,8 @@ namespace BililiveRecorder.Core
             this.UseSystemProxy = useSystemProxy;
             this.Proxy = proxy;
             this.TimingWatchdogTimeout = timingWatchdogTimeout;
+            this.SplitOnScriptTag = splitOnScriptTag;
+            this.DisableSplitOnH264AnnexB = disableSplitOnH264AnnexB;
         }
     }
 }

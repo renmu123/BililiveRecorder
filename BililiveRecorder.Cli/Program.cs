@@ -120,6 +120,8 @@ namespace BililiveRecorder.Cli
                         new Option<bool>(new []{ "--use-system-proxy" }, () => false, "Use system proxy settings"),
                         new Option<string>(new []{ "--proxy" }, "Manual proxy address (e.g., http://127.0.0.1:7890)"),
                         new Option<uint>(new []{ "--timing-watchdog-timeout", "-t" }, () => 10000, "Watchdog timeout in milliseconds (default: 10000)"),
+                        new Option<bool>(new []{ "--split-on-script-tag" }, () => false, "Split output file on script tag"),
+                        new Option<bool>(new []{ "--disable-split-on-h264-annex-b" }, () => false, "Disable split on H264 Annex B"),
 
                         new Argument<string>("url"),
                         new Argument<string>("output-path"),
@@ -275,7 +277,7 @@ namespace BililiveRecorder.Cli
             var serviceProvider = BuildServiceProvider(logger);
 
             var downloaderFactory = serviceProvider.GetRequiredService<IDownloaderFactory>();
-            DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders, args.MaxSize, args.MaxDuration, args.UseSystemProxy, args.Proxy, args.TimingWatchdogTimeout);
+            DownloaderConfig config = new DownloaderConfig(args.Url, args.OutputPath, args.Cookie, args.DownloadHeaders, args.MaxSize, args.MaxDuration, args.UseSystemProxy, args.Proxy, args.TimingWatchdogTimeout, args.SplitOnScriptTag, args.DisableSplitOnH264AnnexB);
             var downloader = downloaderFactory.CreateDownloader(config);
 
             if (args.Progress)
@@ -712,6 +714,10 @@ namespace BililiveRecorder.Cli
             public string? Proxy { get; set; }
 
             public uint TimingWatchdogTimeout { get; set; } = 10000;
+
+            public bool SplitOnScriptTag { get; set; } = false;
+
+            public bool DisableSplitOnH264AnnexB { get; set; } = false;
         }
 
         private static class ConsoleModeHelper
