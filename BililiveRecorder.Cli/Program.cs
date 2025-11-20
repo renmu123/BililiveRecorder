@@ -114,8 +114,8 @@ namespace BililiveRecorder.Cli
                         new Option<string>(new []{ "--cookie", "-c" }, "Cookie string for api requests"),
                         new Option<IEnumerable<string>>(new string[]{ "--download-headers", "-h" }, "Http header for downloader"),
                         new Option<bool>(new []{ "--progress", "-p" }, () => false, "Show recording progress"),
-                        new Option<int?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
-                        new Option<int?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
+                        new Option<double?>(new []{ "--max-size", "-m" }, "Maximum file size in MB"),
+                        new Option<double?>(new []{ "--max-duration", "-d" }, "Maximum duration in minutes"),
                         new Option<bool>(new []{ "--disable-log-file" }, () => false, "Disable log file output"),
                         new Option<bool>(new []{ "--use-system-proxy" }, () => false, "Use system proxy settings"),
                         new Option<string>(new []{ "--proxy" }, "Manual proxy address (e.g., http://127.0.0.1:7890)"),
@@ -697,9 +697,9 @@ namespace BililiveRecorder.Cli
 
             public IEnumerable<string>? DownloadHeaders { get; set; }
 
-            public int? MaxSize { get; set; }
+            public double? MaxSize { get; set; }
 
-            public int? MaxDuration { get; set; }
+            public double? MaxDuration { get; set; }
 
             public bool DisableLogFile { get; set; }
 
