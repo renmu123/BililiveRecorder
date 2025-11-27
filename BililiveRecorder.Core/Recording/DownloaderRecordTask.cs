@@ -115,7 +115,7 @@ namespace BililiveRecorder.Core.Recording
             this.timer.Elapsed += this.Timer_Elapsed_TriggerIOStats;
         }
 
-        void IRecordTask.SplitOutput() => throw new NotImplementedException();
+        void IRecordTask.SplitOutput() => this.splitFileRule.SetSplitBeforeFlag();
         
         void IRecordTask.RequestStop() => this.cts.Cancel();
         

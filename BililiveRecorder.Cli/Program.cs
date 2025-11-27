@@ -290,7 +290,51 @@ namespace BililiveRecorder.Cli
                     Console.Write($"下载进度: {fileSizeMB:F2} MB | 录制时长: {sessionTime:hh\\:mm\\:ss} | 当前文件: {fileTime:hh\\:mm\\:ss}    ");
                 };
             }
-            await downloader.StartRecord(serviceProvider);
+            // 启动录制任务
+            var recordTask = downloader.StartRecord(serviceProvider);
+
+            // 监听键盘输入，按下 'q' 时调用 StopRecord
+            var keyListenerTask = Task.Run(() =>
+            {
+                if (Console.IsInputRedirected)
+                {
+                    // 非 TTY，使用 stdin 传递指令
+                    while (true)
+                    {
+                        var line = Console.In.ReadLine();
+                        if (line == null) break;
+                        if (line.Trim().Equals("q", StringComparison.OrdinalIgnoreCase))
+                        {
+                            downloader.StopRecord();
+                            break;
+                        }
+                        if (line.Trim().Equals("s", StringComparison.OrdinalIgnoreCase))
+                        {
+                            downloader.SplitOutput();
+                        }
+                    }
+                }
+                else
+                {
+                    // TTY，使用按键监听
+                    while (true)
+                    {
+                        var key = Console.ReadKey(true);
+                        if (key.Key == ConsoleKey.Q)
+                        {
+                            downloader.StopRecord();
+                            break;
+                        }
+                        if (key.Key == ConsoleKey.S)
+                        {
+                            downloader.SplitOutput();
+                        }
+                    }
+                }
+            });
+
+            await Task.WhenAny(recordTask, keyListenerTask);
+            await recordTask;
 
             return 0;
         }
