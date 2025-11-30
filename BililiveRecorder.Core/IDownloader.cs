@@ -11,6 +11,8 @@ namespace BililiveRecorder.Core
         DownloaderConfig DownloaderConfig { get; }
 
         Task StartRecord(IServiceProvider sp);
+        void StopRecord();
+        void SplitOutput();
 
         event EventHandler<RecordSessionStartedEventArgs>? RecordSessionStarted;
         event EventHandler<RecordSessionEndedEventArgs>? RecordSessionEnded;
