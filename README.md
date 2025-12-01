@@ -1,107 +1,94 @@
-<div style="text-align:center">
-<img width="20%" src=".github/assets/logo.svg">
+# 说明
 
-# mikufans录播姬
+**这并非录播姬官方项目，官方项目地址见 [BililiveRecorder](https://github.com/BililiveRecorder)**
 
-[![Build and Test](https://github.com/BililiveRecorder/BililiveRecorder/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/BililiveRecorder/BililiveRecorder/actions/workflows/build.yml)
-[![Version](https://img.shields.io/github/tag/Bililive/BililiveRecorder.svg?label=Version)](#)
-[![License](https://img.shields.io/github/license/Bililive/BililiveRecorder.svg)](#)
-[![Crowdin](https://badges.crowdin.net/bililiverecorder/localized.svg)](https://crowdin.com/project/bililiverecorder)
+# 简介
 
-</div>
+本项目的目的是使用录播姬的引擎来实现任意 flv 流的录制，最初版本由 [@kira1928](https://github.com/kira1928/BililiveRecorder) 完成
 
-[简体中文 README | Simplified Chinese](README_CN.md)
+# 安装
 
-GitHub is a global platform, and theoretically, everyone should use English. But since this project is mostly meant for Chinese user and rely on a Chinese website [BiliBili](https://live.bilibili.com) ([_wikipedia_](https://en.wikipedia.org/wiki/Bilibili)), most things related to this project like code comments, documentations and other related repositories are written in Chinese. This README file will always use English so people like _you_ can understand what is this, and perhaps make some use out of it.
+在 [release](https://github.com/renmu123/BililiveRecorder/releases) 选择对应的系统版本
 
-Software UI is available in
+# 使用
 
-- 简体中文 (Source and default)
-- 繁体中文
-- 日本語
-- English
+## Downloader 模式
 
-## Installation
+Downloader 模式允许你直接录制任意 FLV 流,无需配置文件。
 
-See [rec.danmuji.org](https://rec.danmuji.org) (in Chinese) for Windows installer with auto update.
+### 基本用法
 
-Alernatively, you can download from [releases](https://github.com/BililiveRecorder/BililiveRecorder/releases) page.  
-The zip file available at the releases page does not have auto update enabled. You are welcome to watch this repository for new releases. (Click the "Watch" dropdown menu, then "Custom", and check the "Releases" checkbox).
-
-Binary files of the command line version are available for Linux, macOS, and Windows at [releases](https://github.com/BililiveRecorder/BililiveRecorder/releases).
-
-Docker images can be pulled from [Docker Hub `bililive/recorder`](https://hub.docker.com/r/bililive/recorder) or [`ghcr.io/bililiverecorder/bililiverecorder`](https://github.com/bililiverecorder/BililiveRecorder/pkgs/container/bililiverecorder).
-
-See [rec.danmuji.org/user/install](https://rec.danmuji.org/user/install) for step by step installation guides (in Chinese).
-
-## Feature
-
-- Easy to use
-- Start recording automatically when stream starts
-- Record multiple stream at same time
-- Fix broken recording caused by broken bilibili stream server
-- Toolbox mode to fix broken bilibili stream recording recorded by other software<sup>1</sup>
-- Pure C#, no native dependency like ffmpeg<sup>2</sup>
-- Open source!
-
-<sup>1</sup>: Only unprocessed flv file downloaded directly from stream servers can be fixed. If the file is downloaded or processed by FFmpeg it no longer can be fixed, FFmpeg will fvck up the already broken recording even further.  
-<sup>2</sup>: A minimal version of FFmpeg is bundled with the desktop edition of BililiveRecorder for the remux feature in toolbox.
-
-## Versioning
-
-This project is following Semantic Versioning since version 2.0.0.
-
-Please note this does not include the public .NET API of `BililiveRecorder.Flv`, or any project within this repository for that matter. They are considered as internal implementation thus could have breaking changes in any releases.
-
-## Building from source
-
-Note: full git history is required for version generation to work.
-
-WPF version:
-
-```powershell
-cd BililiveRecorder.WPF
-msbuild -t:restore
-msbuild
+```bash
+BililiveRecorder downloader <url> <output-path>
 ```
 
-Command line version:
+或使用简写:
 
-```sh
-# Build WebUI, optional
-git submodule update --init --recursive
-./webui/build.sh
-# For building on Windows:
-# ./webui/build.ps1
-
-dotnet build BililiveRecorder.Cli
+```bash
+BililiveRecorder d <url> <output-path>
 ```
 
-## Project structure
+### 参数说明
 
-Project | Target |
-:--- |:--- |
-BililiveRecorder.Flv | .NET Standard 2.0 |
-BililiveRecorder.Core | .NET 6<br>.NET Framework 4.7.2 |
-BililiveRecorder.Toolbox | .NET Standard 2.0 |
-BililiveRecorder.WPF | .NET Framework 4.7.2 |
-BililiveRecorder.Web | .NET 6 |
-BililiveRecorder.Cli | .NET 6 |
+#### 必需参数
 
-```mermaid
-graph BT
-    toolbox(BililiveRecorder.Toolbox) --> flv(BililiveRecorder.Flv)
-    core(BililiveRecorder.Core) --> flv
-    wpf(BililiveRecorder.WPF) --> core
-    wpf --> toolbox
-    cli(BililiveRecorder.Cli) --> toolbox
-    cli ---> core
-    web(BililiveRecorder.Web) --> core
-    cli --> web
+-   `url`: 要录制的 FLV 流地址
+-   `output-path`: 输出文件路径
+
+#### 可选参数
+
+-   `--loglevel`, `--log`, `-l`: 控制台日志最低级别 (Verbose|Debug|Information|Warning|Error|Fatal)
+    -   默认: Information
+-   `--cookie`, `-c`: API 请求的 Cookie 字符串
+-   `--download-headers`, `-h`: 下载器使用的 HTTP 头
+-   `--progress`, `-p`: 显示录制进度
+-   `--max-size`, `-m`: 最大文件大小 (MB)
+-   `--max-duration`, `-d`: 最大录制时长 (分钟)
+-   `--disable-log-file`: 禁用日志文件输出
+-   `--use-system-proxy`: 使用系统代理设置
+-   `--proxy`: 手动指定代理地址 (例如: http://127.0.0.1:7890)
+-   `--timing-watchdog-timeout`, `-t`: 超时时间(毫秒),默认: 10000
+-   `--split-on-script-tag`: 在 script tag 处分割输出文件
+-   `--disable-split-on-h264-annex-b`: 禁用在 H264 Annex B 处分割
+
+### 使用示例
+
+#### 基本录制
+
+```bash
+BililiveRecorder d "https://example.com/stream.flv" "D:\录制\output.flv"
 ```
 
-## Reference & Acknowledgements
+#### 显示进度并限制大小
 
-- [Adobe Flash Video File Format Specification 10.1.2.01.pdf](https://www.adobe.com/content/dam/acom/en/devnet/flv/video_file_format_spec_v10_1.pdf)
-- [coreyauger/flv-streamer-2-file](https://github.com/coreyauger/flv-streamer-2-file) Used as a reference in the early stages of development
-- [zyzsdy/biliroku](https://github.com/zyzsdy/biliroku) - (probably) first BiliBili stream recording tool.
+```bash
+BililiveRecorder d --progress --max-size 1024 "https://example.com/stream.flv" "D:\录制\output.flv"
+```
+
+#### 使用代理录制
+
+```bash
+BililiveRecorder d --proxy "http://127.0.0.1:7890" "https://example.com/stream.flv" "D:\录制\output.flv"
+```
+
+#### 限制录制时长
+
+```bash
+BililiveRecorder d --max-duration 60 "https://example.com/stream.flv" "D:\录制\output.flv"
+```
+
+### 交互控制
+
+录制过程中支持以下控制命令:
+
+-   **按 `Q` 键**: 停止录制并退出
+-   **按 `S` 键**: 手动分割当前文件(生成新文件继续录制)
+
+如果在非 TTY 环境(如管道或脚本)中运行,可以通过标准输入发送命令:
+
+-   输入 `q\n` : 停止录制
+-   输入 `s\n` : 分割文件
+
+# 更新记录
+
+![更新记录](./CHANEGLOG.md)
