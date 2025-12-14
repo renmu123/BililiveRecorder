@@ -224,7 +224,12 @@ namespace BililiveRecorder.Core.Recording
                     var headerParts = header.Split(new[] { ':' }, 2); // 指定最大分割数量为2
                     if (headerParts.Length == 2)
                     {
-                        headers.Add(headerParts[0], headerParts[1]);
+                        var headerName = headerParts[0].Trim();
+                        var headerValue = headerParts[1].Trim();
+                        if (!headers.TryAddWithoutValidation(headerName, headerValue))
+                        {
+                            this.logger.Warning("无法添加请求头：{HeaderName}:{HeaderValue}", headerName, headerValue);
+                        }
                     }
                     else
                     {
