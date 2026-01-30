@@ -165,10 +165,9 @@ namespace BililiveRecorder.Core.Recording
                 var resp = await client
                     .SendAsync(
                         request,
-                        HttpCompletionOption.ResponseHeadersRead
+                        HttpCompletionOption.ResponseHeadersRead,
                         new CancellationTokenSource(timeout).Token
-                    );
-                    .ConfigureAwait(false);
+                    ).ConfigureAwait(false);
                 switch (resp.StatusCode)
                 {
                     case HttpStatusCode.OK:
