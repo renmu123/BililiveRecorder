@@ -495,16 +495,19 @@ namespace BililiveRecorder.Core.Recording
 
             public Stream CreateAccompanyingTextLogStream()
             {
-                var path = string.IsNullOrWhiteSpace(this.last_path)
-                    ? Path.ChangeExtension(this.dstPath, "txt")
-                    : Path.ChangeExtension(this.last_path, "txt");
+                // var path = string.IsNullOrWhiteSpace(this.last_path)
+                //     ? Path.ChangeExtension(this.dstPath, "txt")
+                //     : Path.ChangeExtension(this.last_path, "txt");
 
-                try
-                { _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!); }
-                catch (Exception) { }
+                // try
+                // { _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!); }
+                // catch (Exception) { }
 
-                var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read);
-                return stream;
+                // var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read);
+                // return stream;
+                
+                // 返回控制台标准输出流，写入到终端而不是文件
+                return Console.OpenStandardOutput();
             }
         }
     }
