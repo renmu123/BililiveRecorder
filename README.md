@@ -48,6 +48,8 @@ BililiveRecorder d <url> <output-path>
 -   `--use-system-proxy`: 使用系统代理设置
 -   `--proxy`: 手动指定代理地址 (例如: http://127.0.0.1:7890)
 -   `--timing-watchdog-timeout`, `-t`: 超时时间(毫秒),默认: 10000
+-   `--allow-missing-header`: 允许录制缺少 FLV Header 的流
+    -   默认: true。传入 `--allow-missing-header false` 可关闭
 -   `--split-on-script-tag`: 在 script tag 处分割输出文件
 -   `--disable-split-on-h264-annex-b`: 禁用在 H264 Annex B 处分割
 

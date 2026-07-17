@@ -4,6 +4,6 @@ namespace BililiveRecorder.Core.Recording
 {
     internal interface IFlvProcessingContextWriterFactory
     {
-        IFlvProcessingContextWriter CreateWriter(IFlvWriterTargetProvider targetProvider);
+        IFlvProcessingContextWriter CreateWriter(IFlvWriterTargetProvider targetProvider, bool allowMissingHeader = false);
     }
 }
